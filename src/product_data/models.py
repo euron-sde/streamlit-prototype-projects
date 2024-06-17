@@ -15,6 +15,23 @@ from src.db.base import Base, CreatedUpdatedMixin
 if TYPE_CHECKING:
     from src.auth import models as auth_models
 
+class ProductStatus(str, enum.Enum):
+    IN_STOCK = "in_stock"
+    OUT_OF_STOCK = "out_of_stock"
+
+class ProductCategory(str, enum.Enum):
+    ELECTRONICS = "electronics"
+    FURNITURE = "furniture"
+    APPAREL = "apparel"
+    GROCERY = "grocery"
+    OTHER = "other"
+
+class ProductRating(str, enum.Enum):
+    ONE = "1"
+    TWO = "2"
+    THREE = "3"
+    FOUR = "4"
+    FIVE = "5"
 
 class ProductData(Base, CreatedUpdatedMixin):
     __tablename__ = "product_data"
@@ -22,13 +39,14 @@ class ProductData(Base, CreatedUpdatedMixin):
     # id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
     product_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=func.uuid_generate_v4())
     product_name: Mapped[str] = mapped_column(sa.Text, nullable=False)
-    product_category: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    product_category: Mapped[ProductCategory] = mapped_column(sa.Enum(ProductCategory), nullable=False)
     product_images: Mapped[str] = mapped_column(sa.Text, nullable=False)
     price: Mapped[float] = mapped_column(sa.Float, nullable=False)
     discount_price: Mapped[float] = mapped_column(sa.Float, nullable=True)
-    product_rating: Mapped[float] = mapped_column(sa.Float, nullable=True)
+    product_rating: Mapped[ProductRating] = mapped_column(sa.Enum(ProductRating), nullable=True)
     product_description: Mapped[str] = mapped_column(sa.Text, nullable=True)
     product_specifications: Mapped[str] = mapped_column(sa.Text, nullable=True)
+    product_status: Mapped[ProductStatus] = mapped_column(sa.Enum(ProductStatus), nullable=False)
 
 
 class UserProductData(Base, CreatedUpdatedMixin):
@@ -40,7 +58,6 @@ class UserProductData(Base, CreatedUpdatedMixin):
     quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     purchase_date: Mapped[datetime] = mapped_column(sa.DateTime, nullable=False)
     purchase_price: Mapped[float] = mapped_column(sa.Float, nullable=False)
-    status: Mapped[str] = mapped_column(sa.Text, nullable=False)
 
     user: Mapped[auth_models.User] = relationship("User")
     product: Mapped[ProductData] = relationship("ProductData")
