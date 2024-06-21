@@ -92,7 +92,7 @@ def chat_page():
         st.session_state.messages = chat_messages
 
     if chat_message := st.chat_input("Type your message here..."):
-        add_message_response = add_message_to_chat(st.session_state.refresh_token, chat_message, stream=True)
+        add_message_response = add_message_to_chat(st.session_state.refresh_token, chat_message)
         if add_message_response and add_message_response.status_code == 200:
             st.session_state.messages.append({"role": "user", "message": chat_message})
             with st.chat_message("user"):

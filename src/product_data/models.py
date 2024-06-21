@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import enum  # type: ignore
 import uuid  # type: ignore
-from datetime import datetime
+
 from typing import TYPE_CHECKING  # type: ignore
 
 import sqlalchemy as sa
-from sqlalchemy import ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import func
+from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db.base import Base, CreatedUpdatedMixin
 
@@ -15,52 +15,22 @@ from src.db.base import Base, CreatedUpdatedMixin
 if TYPE_CHECKING:
     from src.auth import models as auth_models
 
-class ProductStatus(str, enum.Enum):
-    IN_STOCK = "in_stock"
-    OUT_OF_STOCK = "out_of_stock"
 
-class ProductCategory(str, enum.Enum):
-    ELECTRONICS = "electronics"
-    FURNITURE = "furniture"
-    APPAREL = "apparel"
-    GROCERY = "grocery"
-    OTHER = "other"
-
-class ProductRating(str, enum.Enum):
-    ONE = "1"
-    TWO = "2"
-    THREE = "3"
-    FOUR = "4"
-    FIVE = "5"
-
-class ProductData(Base, CreatedUpdatedMixin):
-    __tablename__ = "product_data"
-
-    # id: Mapped[int] = mapped_column(sa.Integer, primary_key=True, autoincrement=True)
-    product_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=func.uuid_generate_v4())
-    product_name: Mapped[str] = mapped_column(sa.Text, nullable=False)
-    product_category: Mapped[ProductCategory] = mapped_column(sa.Enum(ProductCategory), nullable=False)
-    product_images: Mapped[str] = mapped_column(sa.Text, nullable=False)
-    price: Mapped[float] = mapped_column(sa.Float, nullable=False)
-    discount_price: Mapped[float] = mapped_column(sa.Float, nullable=True)
-    product_rating: Mapped[ProductRating] = mapped_column(sa.Enum(ProductRating), nullable=True)
-    product_description: Mapped[str] = mapped_column(sa.Text, nullable=True)
-    product_specifications: Mapped[str] = mapped_column(sa.Text, nullable=True)
-    product_status: Mapped[ProductStatus] = mapped_column(sa.Enum(ProductStatus), nullable=False)
+class CourseStatus(str, enum.Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    COMPLETED = "completed"
 
 
-class UserProductData(Base, CreatedUpdatedMixin):
-    __tablename__ = "user_product_data"
+class CourseData(Base, CreatedUpdatedMixin):
+    __tablename__ = "course_data"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=func.uuid_generate_v4())
-    user_id: Mapped[uuid.UUID] = mapped_column(sa.UUID, ForeignKey("auth_user.id"), nullable=False)
-    product_id: Mapped[uuid.UUID] = mapped_column(sa.UUID, ForeignKey("product_data.product_id"), nullable=False)
-    quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
-    purchase_date: Mapped[datetime] = mapped_column(sa.DateTime, nullable=False)
-    purchase_price: Mapped[float] = mapped_column(sa.Float, nullable=False)
-
-    user: Mapped[auth_models.User] = relationship("User")
-    product: Mapped[ProductData] = relationship("ProductData")
-
-    def __repr__(self) -> str:
-        return f"<UserProductData {self.id}>"
+    course_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, server_default=func.uuid_generate_v4())
+    course_name: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    description: Mapped[str] = mapped_column(sa.Text, nullable=True)
+    instructor: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    course_price: Mapped[int] = mapped_column(sa.INTEGER, nullable=False)
+    course_timing: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    course_rating: Mapped[float] = mapped_column(sa.FLOAT, nullable=True)
+    course_duration: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    course_status: Mapped[CourseStatus] = mapped_column(sa.Enum(CourseStatus), nullable=False)

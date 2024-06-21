@@ -11,9 +11,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.chat.helpers import exa_search, get_generated_image
-from src.chat.services import map_all_urls, contains_any_url, update_chat_image_chat_id
 from src.chat.models import ChatMessage, ChatRole
+from src.chat.helpers import exa_search, get_generated_image
+from src.product_data.services import get_all_course_data_from_db
+from src.chat.services import map_all_urls, contains_any_url, update_chat_image_chat_id
 
 logger = logging.getLogger(__name__)
 GPT4 = "gpt-4o"
@@ -27,7 +28,7 @@ class Chat:
         self.messages: list[ChatMessage] = []
         self.tools = [exa_search, get_generated_image]
         self.chat_model = ChatOpenAI(
-            openai_api_key=settings.OPENAI_API_KEY, model=GPT4).bind_tools(self.tools)
+            openai_api_key=settings.OPENAI_API_KEY, model=GPT3).bind_tools(self.tools)
 
     async def get_messages(self, db: AsyncSession):
         stmt = (
@@ -45,11 +46,10 @@ class Chat:
     ) -> dict:
         try:
             system_prompt = (
-                "You are Sales chatbot AI conversational assistant."
-                "You are an expert in business strategy. "
-                "Done share any text from previous messages with the user."
-                "Greet the user and ask them how you can help them."
-                "Keep the conversation short and concise along with making it interesting."
+                "You are an conversational AI assistant named Euron, developed by Euron.ai company, based in Bangalore, India. The CEO/Founder of this company is Sudhanshu Kumar."
+                "You specialize in generating human-like text responses to various queries with a humanly tone sometime with humor and surprises. The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context."
+                "You're capable of accurately responding to diverse questions, thanks to your perpetual learning and evolution. Your knowledge base is broadened by user-specific data provided in the context section. Paired with your proficiency in natural language processing, this allows you to engage in diverse dialogues, elucidate intricate concepts, and deliver comprehensive insights on a vast array of topics."
+                "In essence, as Euron, your mission is to provide support for any task, supply exhaustive information on various topics, and satisfy human curiosity, be it answering a specific question or contributing to an intellectual discussion about a specific topic. For additional inquiries, please contact us at team@euron.ai or call us at +91 9108132312."
             )
 
             # This is for system prompt
@@ -61,8 +61,6 @@ class Chat:
             )
 
             message_history = await self.get_message_history()
-
-            logger.debug(f"message_history: {message_history}")
 
             if stream:
                 def response():
@@ -78,7 +76,6 @@ class Chat:
                 completion = await self.chat_model.ainvoke(message_history)
 
                 message = await self.add_assistant_message(db=db, content=completion.content, commit=True, user_id=self.user_id)
-                logger.debug(f"message: {message}")
 
                 await db.commit()
                 await db.refresh(message)
@@ -97,7 +94,6 @@ class Chat:
         commit: bool = False,
     ):
         try:
-            logger.info("I am here in add_message !!!")
             message = ChatMessage(
                 user_id=user_id, role=role, message=content)
 
@@ -160,10 +156,12 @@ class Chat:
         stream: bool = False,
     ):
         try:
-            logger.debug(f"user_message: {user_message}")
             await self.add_user_message(db=db, content=user_message, user_id=self.user_id)
+            course_data = await get_all_course_data_from_db(db)
 
             message_history = await self.get_message_history()
+            # Add the system message at the beginning if not already present
+            message_history[0].content += f" Take the context for course data if needed: {course_data}"
 
             if stream:
                 async def response():
@@ -196,7 +194,7 @@ class Chat:
         try:
             while True:
                 completion = await self.chat_model.ainvoke(message_history)
-                logger.debug(f"completion: {completion}")
+                logger.info(f"completion: {completion}")
 
                 tool_calls = completion.tool_calls
                 if not tool_calls:
@@ -223,7 +221,7 @@ class Chat:
                         original_url, local_url)
 
             message = await self.add_assistant_message(db=db, content=completion.content, commit=True, user_id=user_id)
-            logger.debug(f"Message: {message}")
+            logger.info(f"Message: {message}")
 
             if chat_image_ids:
                 for chat_image_id in chat_image_ids:
@@ -247,7 +245,7 @@ class Chat:
         )
         result = await self.db.execute(stmt)
         messages = result.scalars().all()
-        logger.debug(f"messages: {messages}")
+        logger.info(f"messages: {messages}")
         return list(messages) if messages else None
 
     # TODO: This need to be discussed if we need Vision feature in the app

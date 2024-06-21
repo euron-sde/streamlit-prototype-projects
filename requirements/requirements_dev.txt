@@ -22,3 +22,5 @@ python-multipart==0.0.9
 exa-py==1.0.12
 streamlit==1.35.0
 SQLAlchemy-Utils==0.41.2
+openai==1.35.0
+qdrant-client==1.9.2
