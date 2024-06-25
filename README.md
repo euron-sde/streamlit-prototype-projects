@@ -1,7 +1,7 @@
 # Euron Streamlit Prototype
 
 ### 1. [Chatbots for Customer Support](https://github.com/euron-sde/streamlit-prototype-projects/tree/customer_support_chatbot)
-### 2. [Virtual Personal Assistants]()
+### 2. [Virtual Personal Assistants](https://github.com/euron-sde/streamlit-prototype-projects/tree/virtual_personal_assistants)
 ### 3. [Language Translation Services]()
 ### 4. [Grammar and Style Checkers]()
 ### 5. [Social Media Management Tools]()
