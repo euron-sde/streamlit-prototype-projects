@@ -1,0 +1,25 @@
+FROM python:3.11-slim-bullseye
+
+RUN apt-get update && \
+    apt-get install -y gcc libpq-dev && \
+    apt clean && \
+    rm -rf /var/cache/apt/*
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=utf-8
+
+COPY requirements/ /tmp/requirements
+
+RUN pip install -U pip && \
+    pip install --no-cache-dir -r /tmp/requirements/requirements_dev.txt
+
+COPY . /app
+
+RUN useradd -m -d /app -s /bin/bash app \
+    && chown -R app:app /app/*
+    
+WORKDIR /app
+USER app
+
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "9000"]

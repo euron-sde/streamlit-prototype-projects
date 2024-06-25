@@ -1,0 +1,31 @@
+# Migrations
+
+[https://alembic.sqlalchemy.org/en/latest/](https://alembic.sqlalchemy.org/en/latest/)
+
+Generic single-database configuration with an async dbapi.
+
+#### Create migrations
+
+```
+alembic revision --autogenerate -m "description of changes"
+```
+
+#### Applying migrations
+
+Upgrade to latest revision
+
+```
+alembic upgrade head
+```
+
+Show current revision
+
+```
+alembic current [--verbose]
+```
+
+Downgrade `n` revisions
+
+```
+alembic downgrade -<n>
+```
