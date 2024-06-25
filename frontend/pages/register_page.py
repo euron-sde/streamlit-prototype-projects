@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-REGISTER_URL = "http://127.0.0.1:9000/users"
+REGISTER_URL = "http://localhost:9000/users"
 
 
 def register_user(email, password):

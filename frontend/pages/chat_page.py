@@ -2,9 +2,9 @@ import streamlit as st
 import requests
 
 
-CHAT_START_URL = "http://127.0.0.1:9000/chat/start"
-ADD_MESSAGE_URL = "http://127.0.0.1:9000/chat"
-ALL_CHAT_URL = "http://127.0.0.1:9000/allChat"
+CHAT_START_URL = "http://localhost:9000/chat/start"
+ADD_MESSAGE_URL = "http://localhost:9000/chat"
+ALL_CHAT_URL = "http://localhost:9000/allChat"
 
 
 def set_cookie_in_header(refresh_token):
