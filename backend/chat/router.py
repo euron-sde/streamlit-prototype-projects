@@ -4,10 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, HTTPException, Depends, Body, Request
 
 
-from src.db import get_db
-from src.chat.chat import Chat
-from src.auth import models as auth_models
-from src.auth import dependencies as auth_deps
+from backend.chat.chat import Chat
+from backend.auth import models as auth_models
+from backend.auth import dependencies as auth_deps
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

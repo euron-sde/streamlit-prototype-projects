@@ -4,8 +4,8 @@ import string  # type: ignore
 from typing import Any  # type: ignore
 from datetime import datetime, timedelta  # type: ignore
 
-from src.config import settings
-from src.auth.config import auth_config
+from backend.config import settings
+from backend.auth.config import auth_config
 
 
 ALPHA_NUM = string.ascii_letters + string.digits

@@ -6,10 +6,10 @@ from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 
 
-from src.auth.models import User
-from src.auth.schemas import JWTData
-from src.auth.config import auth_config
-from src.auth.exceptions import AuthorizationFailed, AuthRequired, InvalidToken
+from backend.auth.models import User
+from backend.auth.schemas import JWTData
+from backend.auth.config import auth_config
+from backend.auth.exceptions import AuthorizationFailed, AuthRequired, InvalidToken
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/tokens", auto_error=False)
 

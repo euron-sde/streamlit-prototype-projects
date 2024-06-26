@@ -7,15 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import APIRouter, Depends, Response, status
 
-from src.auth import jwt, service, utils
-from src.auth.dependencies import (
+from backend.auth import jwt, service, utils
+from backend.auth.dependencies import (
     valid_refresh_token,
     valid_refresh_token_user,
     valid_user_create,
 )
-from src.db import get_db
-from src.auth.models import RefreshToken
-from src.auth.schemas import AccessTokenResponse, AuthUser, UserResponse
+from backend.db import get_db
+from backend.auth.schemas import AccessTokenResponse, AuthUser, UserResponse
 
 router = APIRouter()
 
@@ -92,11 +91,3 @@ async def auth_user(
 #     response.delete_cookie(
 #         **utils.get_refresh_token_settings(refresh_token["refresh_token"], expired=True)
 #     )
-
-
-@router.post("/users/me")
-async def get_user_info(
-    user: RefreshToken = Depends(valid_refresh_token),
-) -> dict[str, UUID]:
-    logger.info(f"User requested: {user.user_id}")
-    return {"user_id": user.user_id}

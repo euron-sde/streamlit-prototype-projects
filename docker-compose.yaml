@@ -1,70 +1,6 @@
 version: '0.1.0'
 
 services:
-  # app:
-  #   container_name: app
-  #   image: app_image
-  #   env_file:
-  #     - .env
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ./:/src
-  #   ports:
-  #     - "16000:9000"
-  #   depends_on:
-  #     - app_db
-
-  db:
-    image: postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "${HOST_PORT_DB:-5432}:5432"
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${DB_USER}" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  init_db:
-    build:
-      context: ..
-    profiles:
-      - init
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: "${DB_USER}:${DB_PASSWORD}@${DB_HOST:-db}:${DB_PORT}/${DB_NAME}"
-      DB_USER: "${DB_USER}"
-      DB_PASSWORD: "${DB_PASSWORD}"
-      DB_HOST: "${DB_HOST:-db}"
-      DB_PORT: "${DB_PORT}"
-      DB_NAME: "${DB_NAME}"
-    command: [ "python", "-m", "src.db.manage" ]
-
-  adminer:
-    # A handy client to inspect the local database. Useful for debugging.
-    # This is only for local testing / development.
-    # Go to localhost:8080 on your browser
-    # Login credentials from .env file repeated here for convenience:
-    # System=PostgreSQL, 
-    # Server=db
-    # Username=postgres
-    # Password=password
-    # Database=freeEdu
-    image: adminer
-    ports:
-      - "${HOST_PORT_ADMINER:-8080}:8080"
-    restart: unless-stopped
-
   redis:
     image: redis
     command: redis-server --save 900 1 --save 300 10 --save 60 10000 --appendonly no
@@ -94,7 +30,5 @@ services:
       - chromadata:/chroma/chroma
 
 volumes:
-  pgdata:
   redisdata:
   redisinsight-data:
-  chromadata:

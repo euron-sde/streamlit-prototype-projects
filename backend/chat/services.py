@@ -7,7 +7,7 @@ from fastapi import HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy_file.file import File
 
-from src.chat.models import ChatImage
+from backend.chat.models import ChatImage
 
 logger = logging.getLogger(__name__)
 

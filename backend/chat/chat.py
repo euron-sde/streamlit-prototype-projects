@@ -2,13 +2,12 @@ import uuid  # type: ignore
 import json
 import logging
 
+
 from fastapi import Request
 from typing import Any, Optional, List, Union  # type: ignore
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.chat.models import ChatMessage, ChatRole
@@ -23,8 +22,7 @@ GPT3 = "gpt-3.5-turbo-0125"
 
 
 class Chat:
-    def __init__(self, db: AsyncSession, user_id: uuid.UUID):
-        self.db = db
+    def __init__(self, user_id: uuid.UUID):
         self.user_id = user_id
         self.messages: list[ChatMessage] = []
         self.tools = [exa_search, get_generated_image]

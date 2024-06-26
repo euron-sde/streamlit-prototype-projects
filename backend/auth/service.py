@@ -9,17 +9,16 @@ from sqlalchemy import select, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.auth import utils
-from src.auth.config import auth_config
-from src.auth.exceptions import InvalidCredentials
-from src.auth.schemas import AuthUser
-from src.auth.security import check_password, hash_password
-from src.auth.models import User, RefreshToken
+from backend.auth import utils
+from backend.auth.config import auth_config
+from backend.auth.exceptions import InvalidCredentials
+from backend.auth.schemas import AuthUser
+from backend.auth.security import check_password, hash_password
 
 logger = logging.getLogger(__name__)
 
 
-async def create_user(db: AsyncSession, user_data: AuthUser) -> User:
+async def create_user(db: AsyncSession, user_data: AuthUser):
     hashed_password = hash_password(user_data.password)
     created_user = User(id=str(uuid.uuid4()), email=user_data.email,
                         password=hashed_password)

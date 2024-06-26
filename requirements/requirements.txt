@@ -19,3 +19,4 @@ streamlit==1.35.0
 SQLAlchemy-Utils==0.41.2
 openai==1.35.0
 qdrant-client==1.9.2
+motor==3.5.0

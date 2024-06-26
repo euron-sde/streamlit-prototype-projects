@@ -11,12 +11,11 @@ from sqlalchemy_file.validators import SizeValidator
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.db.base import Base, CreatedUpdatedMixin
-from src.config import settings
+from backend.config import settings
 
 
 if TYPE_CHECKING:
-    from src.auth import models as auth_models
+    from backend.auth import models as auth_models
 
 
 class ChatRole(str, enum.Enum):

@@ -4,9 +4,6 @@ import logging
 
 from fastapi import HTTPException
 
-from sqlalchemy import select, delete, update
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 logger = logging.getLogger(__name__)
 

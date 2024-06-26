@@ -8,11 +8,11 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 # from src import redis
-from src.logger import logger
-from src.config import app_configs, settings
-from src.auth.router import router as auth_router
-from src.chat.router import router as chat_router
-from src.data.router import router as data_router
+from .logger import logger
+from .config import app_configs, settings
+from auth.router import router as auth_router
+from chat.router import router as chat_router
+from data.router import router as data_router
 
 logger.info("Starting application")
 

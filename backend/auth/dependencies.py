@@ -6,10 +6,9 @@ from fastapi import Depends, Body, Cookie
 from datetime import datetime, timezone  # type: ignore
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db import get_db
-from src.auth import service
-from src.auth.schemas import AuthUser
-from src.auth.exceptions import EmailTaken, RefreshTokenNotValid
+from backend.auth import service
+from backend.auth.schemas import AuthUser
+from backend.auth.exceptions import EmailTaken, RefreshTokenNotValid
 
 logger = logging.getLogger(__name__)
 

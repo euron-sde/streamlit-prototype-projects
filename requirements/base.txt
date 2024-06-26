@@ -20,3 +20,4 @@ jsonschema
 python-multipart
 exa-py
 sqlalchemy-file
+motor

@@ -7,7 +7,7 @@ from dotenv import load_dotenv, find_dotenv
 from qdrant_client import QdrantClient, models
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 
-from madeline.vector_db.schemas import Document  # type: ignore
+from backend.vector_db.schemas import Document  # type: ignore
 
 load_dotenv(find_dotenv())
 
