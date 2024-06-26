@@ -34,10 +34,6 @@ class Environment(str, Enum):
 
 
 class Config(BaseSettings):
-
-    # REDIS_URL: str | RedisDsn = os.getenv("REDIS_URL")
-    # DATABASE_URL: str = os.getenv("DATABASE_URL")
-
     CORS_ORIGINS: list[str] = ["*"]
     CORS_HEADERS: list[str] = ["*"]
     PROJECT_ROOT: Path = Path(__file__).parent.parent.parent
@@ -49,28 +45,11 @@ class Config(BaseSettings):
     SENTRY_DSN: str | None = None
 
     APP_VERSION: str = "0.1.0"
-    PROJECT_NAME: str = "sales-support-chatBot"
+    PROJECT_NAME: str = "virtual-personal-assistant"
     SITE_DOMAIN: str = "localhost"
 
-    # database settings
-    DB_USER: str = os.environ.get("DB_USER")
-    DB_PASSWORD: str = os.environ.get("DB_PASSWORD")
-    DB_NAME: str = os.environ.get("DB_NAME")
-    DB_NAME_TEST: str | None = None
-    DB_PORT: str = os.environ.get("DB_PORT")
-    DB_HOST: str = os.environ.get("DB_HOST")
-    # MIGRATIONS_DIR: Path = PROJECT_ROOT / "migrations" / "versions"
-
-    @property
-    def DB_URL(self):
-        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-
-    @model_validator(mode="after")
-    def validate_sentry_non_local(self) -> "Config":
-        if self.ENVIRONMENT.is_deployed and not self.SENTRY_DSN:
-            raise ValueError("Sentry is not set")
-
-        return self
+    # mongo db uri
+    MONGODB_URI: str = os.environ.get("MONGODB_URI")
 
     # redis settings
     REDIS_HOST: str | None = None
