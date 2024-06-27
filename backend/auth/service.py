@@ -1,111 +1,66 @@
-import uuid  # type: ignore
-import logging
+import os
 
-from typing import Any  # type: ignore
-from datetime import datetime, timedelta  # type: ignore
+from bson import ObjectId
+from typing import Optional  # type: ignore
+from datetime import datetime  # type: ignore
+from motor.motor_asyncio import AsyncIOMotorClient
 
-from pydantic import UUID4
-from sqlalchemy import select, update, insert
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from backend.auth import utils
-from backend.auth.config import auth_config
-from backend.auth.exceptions import InvalidCredentials
 from backend.auth.schemas import AuthUser
-from backend.auth.security import check_password, hash_password
+from backend.auth.exceptions import InvalidCredentials
+from backend.auth.security import hash_password, check_password
 
-logger = logging.getLogger(__name__)
+client = AsyncIOMotorClient(os.getenv("MONGO_URI"))
 
 
-async def create_user(db: AsyncSession, user_data: AuthUser):
+async def create_user(user_data: AuthUser) -> dict:
     hashed_password = hash_password(user_data.password)
-    created_user = User(id=str(uuid.uuid4()), email=user_data.email,
-                        password=hashed_password)
-    db.add(created_user)
-    await db.commit()
+    created_user = {
+        "email": user_data.email,
+        "password": hashed_password
+    }
+    await client["users"].insert_one(created_user)
     return created_user
 
 
-async def get_user_by_id(db: AsyncSession, user_id: int) -> dict[str, Any] | None:
-    select_query = (
-        select(
-            User
-        )
-        .where(
-            User.id == user_id
-        )
-    )
-    result = await db.execute(select_query)
-    return result.scalar_one_or_none()
+async def get_user_by_id(user_id: str) -> Optional[dict]:
+    return await client["users"].find_one({"_id": ObjectId(user_id)})
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
-    select_query = (
-        select(
-            User
-        )
-        .where(
-            User.email == email
-        )
-    )
-    result = await db.execute(select_query)
-    return result.scalar_one_or_none()
+async def get_user_by_email(email: str) -> Optional[dict]:
+    return await client["users"].find_one({"email": email})
 
 
-async def create_refresh_token(
-    db: AsyncSession,
-    *,
-    user_id: int,
-    refresh_token: str | None = None
-) -> str:
+async def create_refresh_token(user_id: str, refresh_token: Optional[str] = None) -> str:
     if not refresh_token:
         refresh_token = utils.generate_random_alphanum(64)
 
-    insert_query = RefreshToken(
-        refresh_token=refresh_token,
-        expires_at=utils.calculate_refresh_token_expiry(),
-        user_id=user_id,
-    )
-    db.add(insert_query)
-    await db.commit()
-
+    new_refresh_token = {
+        "refresh_token": refresh_token,
+        "expires_at": utils.calculate_refresh_token_expiry(),
+        "user_id": user_id
+    }
+    await client["refresh_tokens"].insert_one(new_refresh_token)
     return refresh_token
 
 
-async def get_refresh_token(db: AsyncSession, refresh_token: str) -> RefreshToken:
-    select_query = (
-        select(
-            RefreshToken
-        )
-        .where(
-            RefreshToken.refresh_token == refresh_token
-        )
-        .options(selectinload(RefreshToken.user))
+async def get_refresh_token(refresh_token: str) -> Optional[dict]:
+    return await client["refresh_tokens"].find_one(
+        {"refresh_token": refresh_token}
     )
-    result = await db.execute(select_query)
-    return result.scalar_one_or_none()
 
 
-async def expire_refresh_token(db: AsyncSession, refresh_token_uuid: UUID4) -> None:
-    update_query = (
-        update(RefreshToken)
-        .where(
-            RefreshToken.id == refresh_token_uuid
-        )
-        .values(
-            expires_at=datetime.now()
-        )
+async def expire_refresh_token(refresh_token_uuid: str) -> None:
+    await client["refresh_tokens"].update_one(
+        {"_id": ObjectId(refresh_token_uuid)},
+        {"$set": {"expires_at": datetime.now()}}
     )
-    await db.execute(update_query)
 
 
-async def authenticate_user(db: AsyncSession, auth_data: AuthUser) -> User:
-    user = await get_user_by_email(db, auth_data.email)
-    if not user:
-        raise InvalidCredentials()
-
-    if not check_password(auth_data.password, user.password):
+async def authenticate_user(auth_data: AuthUser) -> dict:
+    user = await get_user_by_email(auth_data.email)
+    if not user or not check_password(auth_data.password, user["password"]):
         raise InvalidCredentials()
 
     return user
