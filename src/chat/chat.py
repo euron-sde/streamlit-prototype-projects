@@ -162,7 +162,7 @@ class Chat:
 
             message_history = await self.get_message_history()
             # Add the system message at the beginning if not already present
-            message_history[0].content += f" Take the context for course data if needed: {course_data}"
+            message_history[0].content += f"Use the following context for course data if needed: {course_data}"
 
             if stream:
                 async def response():
