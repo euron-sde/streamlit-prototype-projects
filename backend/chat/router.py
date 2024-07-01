@@ -1,5 +1,6 @@
 import logging
 
+from typing import Any
 from fastapi import APIRouter, HTTPException, Depends, Body, Request
 
 from backend.chat.chat import Chat
@@ -11,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 @router.post("/chat/start")
 async def create_chat(
-    user_id: str,
+    user_id: dict[str, Any] = Depends(auth_deps.valid_refresh_token),
 ):
     try:
-        chat = Chat(user_id=user_id)
+        chat = Chat(user_id=user_id["user_id"])
         return await chat.initialize_task_chat()
 
     except Exception as e:
@@ -32,10 +33,10 @@ async def add_message_to_chat(
     streaming: bool = False,
     image_data: str = Body(None, embed=True),
     message: str = Body(..., embed=True),
-    user_id: str = Body(..., embed=True),
+    user_id: dict[str, Any] = Depends(auth_deps.valid_refresh_token),
 ):
     try:
-        chat = Chat(user_id=user_id)
+        chat = Chat(user_id=user_id['user_id'])
 
         if is_image:
             return await chat.vision_chat(
@@ -65,10 +66,10 @@ async def add_message_to_chat(
 
 @router.get("/allChat")
 async def get_all_chat(
-    user_id: str,
+    user_id: dict[str, Any] = Depends(auth_deps.valid_refresh_token),
 ):
     try:
-        chat = Chat(user_id=user_id)
+        chat = Chat(user_id=user_id['user_id'])
         return await chat.get_all_messages()
 
     except Exception as e:

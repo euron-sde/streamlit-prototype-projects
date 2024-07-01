@@ -12,10 +12,10 @@ from typing import Any, List, Union  # type: ignore
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
+from backend.db import get_db
 from backend.config import settings
 from backend.chat.helpers import exa_search, get_generated_image
-from backend.chat.schemas import ChatMessage, ChatRole
-from backend.chat.services import map_all_urls, contains_any_url
+from backend.chat.schemas import ChatMessage, ChatRole, ChatMessageOut
 
 logger = logging.getLogger(__name__)
 GPT4 = "gpt-4o"
@@ -24,8 +24,7 @@ GPT3 = "gpt-3.5-turbo-0125"
 
 class Chat:
     def __init__(self, user_id: uuid.UUID):
-        self.client = AsyncIOMotorClient(os.getenv("MONGODB_URI"))
-        self.db = self.client.get_database("chat_db")
+        self.db = get_db("virtual_assistant")
         self.user_id = ObjectId(user_id)
         self.messages: List[ChatMessage] = []
         self.tools = [exa_search, get_generated_image]
@@ -68,7 +67,17 @@ class Chat:
             else:
                 completion = await self.chat_model.ainvoke(message_history)
                 message = await self.add_assistant_message(content=completion.content, commit=True)
-                return message
+                logger.info(f"assistent message: {message}")
+
+                return ChatMessageOut.model_validate(
+                    {
+                        "id": str(message["_id"]),
+                        "role": message["role"],
+                        "content": message["content"],
+                        "created_at": message["created_at"],
+                        "updated_at": message["updated_at"],
+                    }
+                )
         except Exception as e:
             logger.error(f"Error: {e}")
             raise
@@ -80,11 +89,13 @@ class Chat:
         commit: bool = False,
     ):
         try:
+
             message = {
                 "user_id": self.user_id,
                 "role": role,
-                "message": content,
+                "content": content,
                 "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc),
             }
 
             result = await self.db.chat_messages.insert_one(message)
@@ -93,7 +104,17 @@ class Chat:
             if commit:
                 await self.db.chat_messages.update_one({"_id": message["_id"]}, {"$set": message})
 
-            self.messages.append(message)
+            self.messages.append(
+                {
+                    "id": str(message["_id"]),
+                    "user_id": str(message["user_id"]),
+                    "role": message["role"],
+                    "content": message["content"],
+                    "created_at": message["created_at"],
+                    "updated_at": message["updated_at"],
+                }
+            )
+            logger.info(f"self.messages: {self.messages}")
             return message
 
         except Exception as e:
@@ -122,11 +143,11 @@ class Chat:
         messages = await self.get_all_messages_roles()
         for message in messages:
             if message["role"] == "user":
-                message_history.append(HumanMessage(content=message["message"]))
+                message_history.append(HumanMessage(content=message["content"]))
             elif message["role"] == "assistant":
-                message_history.append(AIMessage(content=message["message"]))
+                message_history.append(AIMessage(content=message["content"]))
             elif message["role"] == "system":
-                message_history.append(SystemMessage(content=message["message"]))
+                message_history.append(SystemMessage(content=message["content"]))
         return message_history
 
     async def task_chat(
@@ -152,7 +173,15 @@ class Chat:
 
             message = await self.process_completion(request, message_history)
 
-            return message
+            return ChatMessageOut.model_validate(
+                {
+                    "id": str(message["_id"]),
+                    "role": message["role"],
+                    "content": message["content"],
+                    "created_at": message["created_at"],
+                    "updated_at": message["updated_at"],
+                }
+            )
 
         except Exception as e:
             logger.error(f"Error: {e}")

@@ -1,8 +1,9 @@
 import re  # type: ignore
 
+from bson import ObjectId
 from datetime import datetime  # type: ignore
 from typing_extensions import Annotated  # type: ignore
-from pydantic import EmailStr, Field, field_validator, BaseModel, AfterValidator
+from pydantic import EmailStr, Field, field_validator, BaseModel, AfterValidator, ConfigDict
 
 
 STRONG_PASSWORD_PATTERN = re.compile(r"^(?=.*[\d])(?=.*[!@#$%^&*])[\w!@#$%^&*]{6,128}$")
@@ -52,3 +53,10 @@ class UserCreate(BaseModel):
 class RefreshToken(BaseModel):
     refresh_token: str
     exp: datetime
+
+
+class AuthRefreshToken(BaseModel):
+    _id: str
+    refresh_token: str
+    user_id: str
+

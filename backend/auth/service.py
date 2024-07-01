@@ -10,14 +10,9 @@ from backend.auth import utils
 from backend.auth.schemas import AuthUser
 from backend.auth.exceptions import InvalidCredentials
 from backend.auth.security import hash_password, check_password
+from backend.db import get_db
 
-
-MONGO_URI = os.getenv("MONGODB_URI")
-if not MONGO_URI:
-    raise ValueError("MONGODB_URI environment variable is not set")
-
-client = AsyncIOMotorClient(MONGO_URI)
-db = client['virtual_assistant']
+db = get_db("virtual_assistant")
 
 
 async def create_user(user_data: AuthUser) -> Dict[str, Any]:

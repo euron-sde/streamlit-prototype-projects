@@ -18,7 +18,7 @@ class ChatAlreadyExists(Exception):
 
 
 class ChatMessageOut(BaseORM):
-    id: uuid.UUID
+    id: str
     role: str
     content: str
     created_at: datetime.datetime
@@ -32,8 +32,8 @@ class ChatRole(str, Enum):
 
 
 class ChatMessage(BaseORM):
-    id: uuid.UUID
-    user_id: uuid.UUID
+    id: str
+    user_id: str
     role: ChatRole
     content: str
     created_at: datetime.datetime

@@ -94,7 +94,7 @@ async def verify_token(api_key: str) -> None:
         raise TokenVerificationError("Unauthorized user") from e
 
 
-async def authenticate_JWT(request: Request) -> None:
+async def authenticate_jwt(request: Request) -> None:
     """
     Middleware function to authenticate API keys.
     """
