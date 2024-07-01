@@ -1,6 +1,6 @@
 import logging
 
-from typing import Any
+from typing import Any  # type: ignore
 from fastapi import APIRouter, HTTPException, Depends, Body, Request
 
 from backend.chat.chat import Chat
@@ -46,13 +46,11 @@ async def add_message_to_chat(
 
         if streaming:
             return await chat.task_chat(
-                request=request,
                 user_message=message,
                 stream=streaming
             )
 
         return await chat.task_chat(
-            request=request,
             user_message=message
         )
 

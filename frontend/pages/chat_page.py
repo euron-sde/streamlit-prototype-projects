@@ -51,7 +51,7 @@ def get_all_chat(refresh_token):
         return None
 
 
-def display_chat_messages(messages, displayed_ids):
+def display_chat_messages(messages):
     for message in messages:
         if message['role'] == 'user':
             with st.chat_message("user"):
@@ -88,7 +88,7 @@ def chat_page():
             st.error("Failed to start chat!")
 
     if chat_messages := load_chat_messages(st.session_state.refresh_token):
-        display_chat_messages(chat_messages, st.session_state.displayed_message_ids)
+        display_chat_messages(chat_messages)
         st.session_state.messages = chat_messages
 
     if chat_message := st.chat_input("Type your message here..."):
@@ -98,7 +98,7 @@ def chat_page():
             with st.chat_message("user"):
                 st.markdown(chat_message)
 
-            assistant_message = add_message_response.json().get("message", "")
+            assistant_message = add_message_response.json().get("content", "")
             with st.chat_message("assistant"):
                 st.markdown(assistant_message)
             st.session_state.messages.append({"role": "assistant", "message": assistant_message})

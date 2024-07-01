@@ -15,7 +15,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from backend.db import get_db
 from backend.config import settings
 from backend.chat.helpers import exa_search, get_generated_image
-from backend.chat.schemas import ChatMessage, ChatRole, ChatMessageOut
+from backend.chat.schemas import ChatMessage, ChatRole, ChatMessageOut, AllChatMessage
 
 logger = logging.getLogger(__name__)
 GPT4 = "gpt-4o"
@@ -25,6 +25,7 @@ GPT3 = "gpt-3.5-turbo-0125"
 class Chat:
     def __init__(self, user_id: uuid.UUID):
         self.db = get_db("virtual_assistant")
+        self.db.chat_messages.create_index([("user_id", 1)])
         self.user_id = ObjectId(user_id)
         self.messages: List[ChatMessage] = []
         self.tools = [exa_search, get_generated_image]
@@ -152,7 +153,6 @@ class Chat:
 
     async def task_chat(
         self,
-        request: Request,
         user_message: str,
         stream: bool = False,
     ):
@@ -171,7 +171,7 @@ class Chat:
                     await self.db.chat_messages.update_one({"_id": message["_id"]}, {"$set": {"content": content}})
                 return response()
 
-            message = await self.process_completion(request, message_history)
+            message = await self.process_completion(message_history)
 
             return ChatMessageOut.model_validate(
                 {
@@ -189,7 +189,6 @@ class Chat:
 
     async def process_completion(
         self,
-        request: Request,
         message_history: List[Union[HumanMessage, AIMessage, SystemMessage]],
     ):
         try:
@@ -228,48 +227,19 @@ class Chat:
             "role": {"$in": [ChatRole.ASSISTANT, ChatRole.USER]}
         }).sort("created_at", 1).to_list(length=None)
         logger.info(f"messages: {messages}")
-        return list(messages) if messages else None
-
-    # async def vision_chat(
-    #     self,
-    #     user_message: Union[str, Any],
-    #     image_data: str,
-    # ):
-    #     try:
-    #         chat_model = ChatOpenAI(
-    #             openai_api_key=settings.OPENAI_API_KEY, model=GPT4, temperature=0.7
-    #         )
-
-    #         message_history = await self.get_message_history()
-
-    #         message = [
-    #             {'type': 'image_url', 'image_url': {'url': image_data}},
-    #             {'type': 'text', 'text': user_message},
-    #         ]
-
-    #         message_history = message_history[-4:]
-
-    #         message_history.append(HumanMessage(content=str(message)))
-
-    #         completion = await chat_model.ainvoke(message_history)
-
-    #         message_history.append(AIMessage(content=completion.content))
-    #         message_history.append(HumanMessage(
-    #             content=self.talking_prompt(image_review=completion.content)
-    #         ))
-
-    #         talk_completion = await chat_model.ainvoke(message_history)
-
-    #         final_completion = json.dumps([
-    #             {"reviews": completion.content},
-    #             {"conversation": talk_completion.content}
-    #         ])
-
-    #         await self.add_user_message(content=str(message[1]['text']), commit=True)
-    #         message = await self.add_assistant_message(content=final_completion, commit=True)
-
-    #         return message
-
-    #     except Exception as e:
-    #         logger.error(f"Error: {e}")
-    #         raise
+        return (
+            [
+                AllChatMessage.model_validate(
+                    {
+                        "id": str(message["_id"]),
+                        "role": message["role"],
+                        "message": message["content"],
+                        "created_at": message["created_at"],
+                        "updated_at": message["updated_at"],
+                    }
+                )
+                for message in messages
+            ]
+            if messages
+            else None
+        )

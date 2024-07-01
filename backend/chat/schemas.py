@@ -25,6 +25,14 @@ class ChatMessageOut(BaseORM):
     updated_at: datetime.datetime
 
 
+class AllChatMessage(BaseORM):
+    id: str
+    role: str
+    message: str
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+
 class ChatRole(str, Enum):
     USER = "user"
     ASSISTANT = "assistant"

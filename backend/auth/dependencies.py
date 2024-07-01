@@ -25,8 +25,7 @@ async def valid_user_create(
 
 
 async def valid_refresh_token(
-    # refresh_token: str = Cookie(..., alias="refreshToken"),
-    refresh_token: str = Body(...),
+    refresh_token: str = Cookie(..., alias="refreshToken"),
 ) -> dict[str, Any]:
 
     db_refresh_token = await service.get_refresh_token(refresh_token)
