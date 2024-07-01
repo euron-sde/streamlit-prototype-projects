@@ -7,7 +7,6 @@ from contextlib import asynccontextmanager  # type: ignore
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-# from src import redis
 from backend.logger import logger
 from backend.config import app_configs, settings
 from backend.auth.router import router as auth_router
@@ -51,7 +50,6 @@ app = FastAPI(**app_configs, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    # allow_origin_regex=settings.CORS_ORIGINS_REGEX,
     allow_credentials=True,
     allow_methods=["*"],  # allow all methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=settings.CORS_HEADERS,
