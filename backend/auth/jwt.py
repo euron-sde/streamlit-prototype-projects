@@ -6,7 +6,6 @@ from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 
 
-from backend.auth.models import User
 from backend.auth.schemas import JWTData
 from backend.auth.config import auth_config
 from backend.auth.exceptions import AuthorizationFailed, AuthRequired, InvalidToken
@@ -16,8 +15,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/tokens", auto_error=False)
 
 def create_access_token(
     *,
-    user: User,
-    expires_delta: timedelta = timedelta(minutes=auth_config.JWT_EXPIRATION),
+    user: dict,
 ) -> str:
     # if user.is_admin:
     #     jwt_data = {
@@ -27,9 +25,9 @@ def create_access_token(
     #     }
     # else:
     jwt_data = {
-        "email": str(user.email),
+        "email": str(user["email"]),
         # "exp": datetime.utcnow() + expires_delta,
-        "password": str(user.password),
+        "password": str(user["password"]),
     }
 
     return jwt.encode(jwt_data, auth_config.SECRET_KEY, algorithm=auth_config.JWT_ALGORITHM)
@@ -89,7 +87,7 @@ async def verify_token(api_key: str) -> None:
     Verify the JWT token.
     """
     try:
-        decoded_token = jwt.decode(
+        jwt.decode(
             api_key, auth_config.SECRET_KEY, algorithms=[auth_config.JWT_ALGORITHM]
         )
     except JWTError as e:
@@ -102,9 +100,6 @@ async def authenticate_JWT(request: Request) -> None:
     """
     # Extract headers
     api_key = request.headers.get("Api-Key")
-    # user_name = request.headers.get("User-Name")
-
-    # Check if headers are present
     if api_key is None:
         raise HTTPException(status_code=401, detail="API Key is missing")
 

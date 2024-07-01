@@ -3,7 +3,6 @@ import logging
 from fastapi import APIRouter, HTTPException, Depends, Body, Request
 
 from backend.chat.chat import Chat
-from backend.auth import models as auth_models
 from backend.auth import dependencies as auth_deps
 
 router = APIRouter()
@@ -12,10 +11,10 @@ logger = logging.getLogger(__name__)
 
 @router.post("/chat/start")
 async def create_chat(
-    user: auth_models.RefreshToken = Depends(auth_deps.valid_refresh_token),
+    user_id: str,
 ):
     try:
-        chat = Chat(user_id=user.user_id)
+        chat = Chat(user_id=user_id)
         return await chat.initialize_task_chat()
 
     except Exception as e:
@@ -33,10 +32,10 @@ async def add_message_to_chat(
     streaming: bool = False,
     image_data: str = Body(None, embed=True),
     message: str = Body(..., embed=True),
-    user: auth_models.RefreshToken = Depends(auth_deps.valid_refresh_token),
+    user_id: str = Body(..., embed=True),
 ):
     try:
-        chat = Chat(user_id=user.user_id)
+        chat = Chat(user_id=user_id)
 
         if is_image:
             return await chat.vision_chat(
@@ -66,10 +65,10 @@ async def add_message_to_chat(
 
 @router.get("/allChat")
 async def get_all_chat(
-    user: auth_models.RefreshToken = Depends(auth_deps.valid_refresh_token),
+    user_id: str,
 ):
     try:
-        chat = Chat(user_id=user.user_id)
+        chat = Chat(user_id=user_id)
         return await chat.get_all_messages()
 
     except Exception as e:
